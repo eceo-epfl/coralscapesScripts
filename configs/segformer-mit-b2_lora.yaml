@@ -1,0 +1,59 @@
+# # """
+# # Resources: 
+# # Xie, E., Wang, W., Yu, Z., Anandkumar, A., Alvarez, J. M., & Luo, P. (2021). 
+# # SegFormer: Simple and efficient design for semantic segmentation with transformers. 
+# # Advances in neural information processing systems, 34, 12077-12090.
+# # https://huggingface.co/docs/transformers/v4.48.2/en/model_doc/segformer
+# # https://github.com/NVlabs/SegFormer
+# # """
+
+run_name: "segformer_mit_b2-base_lora_run"
+
+data:
+  batch_size: 8
+  batch_size_eval: 8
+
+augmentation:
+  train:
+    RandomScale:
+      scale_limit: [0, 1]
+    RandomCrop:
+      width: 1024
+      height: 1024  
+    HorizontalFlip:
+      p: 0.5
+    Normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  val:
+    Normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  test:
+    Normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+      
+model:
+  name: "segformer-mit-b2"
+
+training:
+  epochs: 1000
+  optimizer:
+    type: torch.optim.AdamW
+    lr: 0.0006
+    weight_decay: 0.01
+  scheduler:
+    type: torch.optim.lr_scheduler.PolynomialLR
+    power: 1
+    total_iters: 1000
+  preprocessor: "segformer"
+  eval: 
+    sliding_window: True
+    window: 1024
+    stride: 1024
+    
+lora:
+  r: 128
+  lora_alpha: 32
+  modules_to_save: ["decode_head"]

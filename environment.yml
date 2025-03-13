@@ -1,0 +1,29 @@
+name: coralscapes
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - pandas
+  - matplotlib
+  - jupyter
+  - glob2
+  - scikit-image
+  - tqdm
+  - ipywidgets
+  - ipython
+  - seaborn
+  - pip:
+    - opencv-python
+    - torch
+    - torchvision
+    - torchaudio
+    - datasets
+    - transformers
+    - albumentations
+    - wandb
+    - torchmetrics
+    - segmentation-models-pytorch
+    - peft
+    - -e .

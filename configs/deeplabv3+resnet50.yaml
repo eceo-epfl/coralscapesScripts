@@ -1,0 +1,53 @@
+# """
+# Resources: 
+# Chen, L. C., Zhu, Y., Papandreou, G., Schroff, F., & Adam, H. (2018). 
+# Encoder-decoder with atrous separable convolution for semantic image segmentation. 
+# In Proceedings of the European conference on computer vision (ECCV) (pp. 801-818).
+
+# Chen, L. C. (2017). Rethinking atrous convolution for semantic image segmentation. 
+# arXiv preprint arXiv:1706.05587.
+
+# https://github.com/tensorflow/models/tree/master/research/deeplab
+# https://github.com/tensorflow/models/blob/master/research/deeplab/train.py
+# """
+
+run_name: "deeplabv3+resnet50_run"
+
+augmentation:
+  train:
+    RandomScale:
+      scale_limit: [-0.25, 1]
+    RandomCrop:
+      width: 768
+      height: 768
+    HorizontalFlip:
+      p: 0.5
+    Normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  val:
+    Normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  test:
+    Normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+      
+model:
+  name: "deeplabv3+resnet50"
+
+training:
+  epochs: 1000
+  optimizer:
+    type: torch.optim.SGD
+    lr: 0.001
+    weight_decay: 0.0001
+    momentum: 0.9
+  scheduler:
+    type: torch.optim.lr_scheduler.PolynomialLR
+    power: 0.9
+    total_iters: 1000
+  loss: 
+    type: "cross_entropy"
+    reduction: "mean"

@@ -1,0 +1,16 @@
+*.egg-info
+.micromamba
+*.pyc
+
+*nbs/benchmark_run_results
+*nbs/model_checkpoints
+*nbs/wandb
+
+*benchmark_runs/benchmark_run_results
+*benchmark_runs/model_checkpoints
+*benchmark_runs/wandb
+
+*slurm_jobs/benchmark_run_results
+*slurm_jobs/model_checkpoints
+*slurm_jobs/wandb
+

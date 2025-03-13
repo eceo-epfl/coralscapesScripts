@@ -1,0 +1,11 @@
+run_name: "base"
+
+logger:
+  wandb_project: "coralscapes"
+  log_epochs: 5
+
+data:
+  root: "../../coralscapes"
+  batch_size: 16
+  batch_size_eval: 16
+  weight: False

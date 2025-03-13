@@ -1,0 +1,57 @@
+# """
+# Resources: 
+# Zhou, Z., Siddiquee, M. M. R., Tajbakhsh, N., & Liang, J. (2019). 
+# Unet++: Redesigning skip connections to exploit multiscale features in image segmentation. 
+# IEEE transactions on medical imaging, 39(6), 1856-1867.
+
+# Zhou, Z., Rahman Siddiquee, M. M., Tajbakhsh, N., & Liang, J. (2018). 
+# Unet++: A nested u-net architecture for medical image segmentation. 
+# In Deep Learning in Medical Image Analysis and Multimodal Learning for Clinical Decision Support: 
+# 4th International Workshop, DLMIA 2018, and 8th International Workshop, ML-CDS 2018, 
+# Held in Conjunction with MICCAI 2018, Granada, Spain, September 20, 2018, Proceedings 4 (pp. 3-11). Springer International Publishing.
+
+# https://github.com/MrGiovanni/UNetPlusPlus/blob/19bf84f937ccc7fd30b79d1db392be19920e5745/pytorch/nnunet/training/network_training/nnUNetPlusPlusTrainerV2.py#L132
+# https://github.com/MrGiovanni/UNetPlusPlus/blob/19bf84f937ccc7fd30b79d1db392be19920e5745/pytorch/nnunet/training/network_training/nnUNetTrainer.py#L269
+# """
+
+run_name: "unet++resnet50_run"
+
+augmentation:
+  train:
+    RandomCrop:
+      width: 512
+      height: 512
+    HorizontalFlip:
+      p: 0.5
+    Normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  val:
+    Normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+  test:
+    Normalize:
+      mean: [0.485, 0.456, 0.406]
+      std: [0.229, 0.224, 0.225]
+      
+model:
+  name: "unet++resnet50"
+
+training:
+  epochs: 1000
+  optimizer:
+    type: torch.optim.SGD
+    lr: 0.01
+    weight_decay: 0.00003
+    momentum: 0.99
+  scheduler:
+    type: torch.optim.lr_scheduler.PolynomialLR
+    power: 0.9
+    total_iters: 1000
+  loss: 
+    type: "cross_entropy+dice"
+    weight_dice: 1.0
+    weight_ce: 1.0
+    reduction: "mean"
+    eps: 0.00001
