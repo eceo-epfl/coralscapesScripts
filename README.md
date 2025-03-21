@@ -89,7 +89,7 @@ There are two ways to explore the dataset within your code.
 
 ### Semantic Segmentation Inference
 There are several options to use the models fine-tuned on Coralscapes: 
-- You can use the `scripts/inference.py` script using a downloaded model checkpoint:
+- You can use the `scripts/inference.py` script using a downloaded model checkpoint as shown below. This script utilizes a sliding window approach for the prediction, thus the prediction results may differ from the ones used in the model evaluation. In order to replicate the evaluation procedure of the specific models, use the `scripts/inference_evaluation.py` script.    
     ```bash
     cd scripts
     python inference.py \
@@ -126,8 +126,9 @@ There are several options to use the models fine-tuned on Coralscapes:
         import torch.nn.functional as F
         from transformers import SegformerImageProcessor, SegformerForSemanticSegmentation
         from PIL import Image
-        from datasets import load_dataset
         import numpy as np
+        from datasets import load_dataset
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
         def resize_image(image, target_size=1024):
             """
@@ -165,29 +166,29 @@ There are several options to use the models fine-tuned on Coralscapes:
             
             for h_idx in range(h_grids):
                 for w_idx in range(w_grids):
-                y1 = h_idx * h_stride
-                x1 = w_idx * w_stride
-                y2 = min(y1 + h_crop, h_img)
-                x2 = min(x1 + w_crop, w_img)
-                y1 = max(y2 - h_crop, 0)
-                x1 = max(x2 - w_crop, 0)
-                crop_img = img[:, :, y1:y2, x1:x2]
-                with torch.no_grad():
-                    if(preprocessor):
-                        inputs = preprocessor(crop_img, return_tensors = "pt")
-                        inputs["pixel_values"] = inputs["pixel_values"].to(device)
-                    else:
-                        inputs = crop_img.to(device)
-                    outputs = model(**inputs)
-
-                resized_logits = F.interpolate(
-                    outputs.logits[0].unsqueeze(dim=0), size=crop_img.shape[-2:], mode="bilinear", align_corners=False
-                )
-                preds += F.pad(resized_logits,
-                                (int(x1), int(preds.shape[3] - x2), int(y1),
-                                int(preds.shape[2] - y2)))
-                count_mat[:, :, y1:y2, x1:x2] += 1
-            
+                    y1 = h_idx * h_stride
+                    x1 = w_idx * w_stride
+                    y2 = min(y1 + h_crop, h_img)
+                    x2 = min(x1 + w_crop, w_img)
+                    y1 = max(y2 - h_crop, 0)
+                    x1 = max(x2 - w_crop, 0)
+                    crop_img = img[:, :, y1:y2, x1:x2]
+                    with torch.no_grad():
+                        if(preprocessor):
+                            inputs = preprocessor(crop_img, return_tensors = "pt")
+                            inputs["pixel_values"] = inputs["pixel_values"].to(device)
+                        else:
+                            inputs = crop_img.to(device)
+                        outputs = model(**inputs)
+    
+                    resized_logits = F.interpolate(
+                        outputs.logits[0].unsqueeze(dim=0), size=crop_img.shape[-2:], mode="bilinear", align_corners=False
+                    )
+                    preds += F.pad(resized_logits,
+                                    (int(x1), int(preds.shape[3] - x2), int(y1),
+                                    int(preds.shape[2] - y2))).cpu()
+                    count_mat[:, :, y1:y2, x1:x2] += 1
+                
             assert (count_mat == 0).sum() == 0
             preds = preds / count_mat
             preds = preds.argmax(dim=1)
@@ -243,7 +244,7 @@ The dataset structure of the Coralscapes dataset follows the structure of the Ci
 
 The meaning of the individual elements is:
  - `root`  the root folder of the Coralscapes dataset. 
- - `type`  the type/modality of data, `gtFine` for fine ground truth, or `leftImg8bit` for left 8-bit images.
+ - `type`  the type/modality of data, `gtFine` for fine ground truth, or `leftImg8bit` for left 8-bit images, `leftImg8bit_1080p (gtFine_1080p)` for the images (ground truth) in 1080p resolution, `leftImg8bit_videoframes` for the 19 preceding and 10 trailing video frames.
  - `split` the split, i.e. train/val/test. Note that not all kinds of data exist for all splits. Thus, do not be surprised to occasionally find empty folders.
  - `site`  ID of the site in which this part of the dataset was recorded.
  - `seq`   the sequence number using 6 digits.

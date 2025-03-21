@@ -63,7 +63,6 @@ def get_parser():
     parser.add_argument('--wandb-project', type=str, 
                         help='wandb project name')
     parser.add_argument('--model', type=str,
-                        choices=['deeplabv3+resnet101', 'deeplabv3+resnext50', 'fcn_resnet101', 'deeplabv3+resnext50_32x4d'],
                         help='model name')
     parser.add_argument('--weight', type=bool,
                         help='add weights to loss')
@@ -103,6 +102,8 @@ def update_config_with_args(config, args):
     if args.model:
         config['model']['name'] = args.model
     if(args.model_checkpoint):
+        if "model" not in config:
+            config["model"] = ConfigDict({"name": "segformer"})
         config['model']['checkpoint'] = args.model_checkpoint
     if args.weight:
         config['data']['weight'] = args.weight

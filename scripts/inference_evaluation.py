@@ -1,6 +1,5 @@
 import torch 
 import albumentations as A
-import torch.nn.functional as F
 from coralscapesScripts.segmentation.model import Benchmark_Run
 from coralscapesScripts.io import setup_config, get_parser, update_config_with_args
 
@@ -9,79 +8,6 @@ from coralscapesScripts.segmentation.model import predict
 import glob
 import numpy as np
 from PIL import Image
-
-def resize_image(image, target_size=1024):
-    h_img, w_img = image.size
-    if h_img < w_img:
-        new_h, new_w = target_size, int(w_img * (target_size / h_img))
-    else:
-        new_h, new_w  = int(h_img * (target_size / w_img)), target_size
-    
-    resized_img = image.resize((new_h, new_w))
-    return resized_img
-
-def segment_image(image, preprocessor, model, crop_size = (1024, 1024), num_classes = 40, transform=None):    
-    h_crop, w_crop = crop_size
-    img = torch.Tensor(np.array(resize_image(image, target_size=min(crop_size))).transpose(2, 0, 1)).unsqueeze(0)
-    batch_size, _, h_img, w_img = img.size()
-
-    h_grids = int(np.round(3/2*h_img/h_crop)) if h_img > h_crop else 1
-    w_grids = int(np.round(3/2*w_img/w_crop)) if w_img > w_crop else 1
-    
-    h_stride = int((h_img - h_crop + h_grids -1)/(h_grids -1)) if h_grids > 1 else h_crop
-    w_stride = int((w_img - w_crop + w_grids -1)/(w_grids -1)) if w_grids > 1 else w_crop
-    
-    preds = img.new_zeros((batch_size, num_classes, h_img, w_img))
-    count_mat = img.new_zeros((batch_size, 1, h_img, w_img))
-    
-    for h_idx in range(h_grids):
-        for w_idx in range(w_grids):
-            y1 = h_idx * h_stride
-            x1 = w_idx * w_stride
-            y2 = min(y1 + h_crop, h_img)
-            x2 = min(x1 + w_crop, w_img)
-            y1 = max(y2 - h_crop, 0)
-            x1 = max(x2 - w_crop, 0)
-            crop_img = img[:, :, y1:y2, x1:x2]
-
-            if transform:
-                crop_img = torch.Tensor(transform(image = crop_img.squeeze(0).numpy())["image"]).unsqueeze(0)  
-
-            with torch.no_grad():
-                if(preprocessor):
-                    inputs = preprocessor(crop_img, return_tensors = "pt")
-                    inputs["pixel_values"] = inputs["pixel_values"].to(device)
-                else:
-                    inputs = crop_img.to(device)
-
-                if(torch.is_tensor(inputs)): 
-                    outputs = model(inputs)
-
-                elif "pixel_values" in inputs:
-                    outputs = model(**inputs)
-
-            if(hasattr(outputs, "logits")): 
-                outputs = outputs.logits
-
-            resized_logits = F.interpolate(
-                outputs[0].unsqueeze(dim=0), size=crop_img.shape[-2:], mode="bilinear", align_corners=False
-            )
-
-            preds += F.pad(resized_logits,
-                            (int(x1), int(preds.shape[3] - x2), int(y1),
-                            int(preds.shape[2] - y2))).cpu()
-            count_mat[:, :, y1:y2, x1:x2] += 1
-    
-    assert (count_mat == 0).sum() == 0
-    preds = preds / count_mat
-    
-    preds = preds.argmax(dim=1)
-    
-    preds = F.interpolate(preds.unsqueeze(0).type(torch.uint8), size=image.size[::-1], mode='nearest')
-    label_pred = preds.squeeze().cpu().numpy()
-    
-    return label_pred
-
 
 device_count = torch.cuda.device_count()
 for i in range(device_count):
@@ -113,16 +39,23 @@ benchmark_run = Benchmark_Run(run_name = cfg.run_name, model_name = cfg.model.na
 benchmark_run.model.to(device)
 benchmark_run.model.eval()
 
+
 input_dir = args.inputs
 output_dir = args.outputs
 
 # Get the list of image paths
 image_paths = glob.glob(f'{input_dir}/*.png') + glob.glob(f'{input_dir}/*.jpg') + glob.glob(f'{input_dir}/*.jpeg')
+print(image_paths)
 
 for image_path in image_paths:
-    image = Image.open(image_path)
-    label_pred = segment_image(image, benchmark_run.preprocessor, benchmark_run.model, transform = transform, crop_size=(1024, 1024))
+    image = Image.open(image_path).convert('RGB')
 
+    preprocessed_batch, window_dims = preprocess_inference(np.array(image), transform, benchmark_run)
+    with torch.no_grad():
+        label_pred = predict(preprocessed_batch, 
+                                        benchmark_run,
+                                        window_dims = window_dims)
+        
     label_pred_colors =  np.array([[id2color[pixel] for pixel in row] for row in np.array(label_pred)])
     mask_image = Image.fromarray(label_pred.astype(np.uint8))
     mask_image_colors = Image.fromarray(label_pred_colors.astype(np.uint8), 'RGB')
