@@ -271,6 +271,7 @@ The meaning of the individual elements is:
 ```
 
 ## License
+This dataset is licensed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 ## Citation
 If you find this project useful, please consider citing:
