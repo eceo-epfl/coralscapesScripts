@@ -20,6 +20,7 @@
 <!-- # UPDATE once we have the final codebase -->
 <a href="arxiv_link"><img src='https://img.shields.io/badge/arXiv-Coralscapes-red' alt='Paper PDF'></a>
 <a href='page_link'><img src='https://img.shields.io/badge/Project_Page-Coralscapes-green' alt='Project Page'></a>
+<a href='https://zenodo.org/records/15061505'><img src='https://img.shields.io/badge/Zenodo-Coralscapes-teal'></a>
 <a href='https://huggingface.co/datasets/EPFL-ECEO/coralscapes'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Coralscapes-yellow'></a>
 <a href='https://huggingface.co/spaces/EPFL-ECEO/coralscapes_demo'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo-blue'></a>
 </div>
@@ -57,8 +58,7 @@ micromamba activate coralscapes
 ### Dataset
 There are two ways to explore the dataset within your code.
 
-<!-- # UPDATE with zenodo link -->
-- The first approach is to clone this repository and download the dataset from [zenodo](link). Then you can use the `Coralscapes` class to load the dataset splits given their location.
+- The first approach is to clone this repository and download the dataset from [zenodo](https://zenodo.org/records/15061505). Then you can use the `Coralscapes` class to load the dataset splits given their location.
     ```python
     from coralscapesScripts.datasets.dataset import Coralscapes
 
