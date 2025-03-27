@@ -17,9 +17,8 @@
 <br>
 *Equal contribution
 
-<!-- # UPDATE once we have the final codebase -->
-<a href="arxiv_link"><img src='https://img.shields.io/badge/arXiv-Coralscapes-red' alt='Paper PDF'></a>
-<a href='page_link'><img src='https://img.shields.io/badge/Project_Page-Coralscapes-green' alt='Project Page'></a>
+<a href="https://arxiv.org/pdf/2503.20000"><img src='https://img.shields.io/badge/arXiv-Coralscapes-red' alt='Paper PDF'></a>
+<a href='https://josauder.github.io/coralscapes/'><img src='https://img.shields.io/badge/Project_Page-Coralscapes-green' alt='Project Page'></a>
 <a href='https://zenodo.org/records/15061505'><img src='https://img.shields.io/badge/Zenodo-Coralscapes-teal'></a>
 <a href='https://huggingface.co/datasets/EPFL-ECEO/coralscapes'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Coralscapes-yellow'></a>
 <a href='https://huggingface.co/spaces/EPFL-ECEO/coralscapes_demo'><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo-blue'></a>
@@ -275,13 +274,14 @@ This dataset is licensed under the [Apache License 2.0](https://www.apache.org/l
 
 ## Citation
 If you find this project useful, please consider citing:
- <!-- # UPDATE To-Do -->
 ```bibtex
-@article{,
-  title={The Coralscapes Dataset: Semantic Scene Understanding in Coral Reefs},
-  author={Sauder, Jonathan and Domazetoski, Viktor and Banc-Prandi, Guilhem and Perna, Gabriela and Meibom, Anders and Tuia, Devis},
-  journal={arXiv:},
-  year={2025}
-}
-
+@misc{sauder2025coralscapesdatasetsemanticscene,
+        title={The Coralscapes Dataset: Semantic Scene Understanding in Coral Reefs}, 
+        author={Jonathan Sauder and Viktor Domazetoski and Guilhem Banc-Prandi and Gabriela Perna and Anders Meibom and Devis Tuia},
+        year={2025},
+        eprint={2503.20000},
+        archivePrefix={arXiv},
+        primaryClass={cs.CV},
+        url={https://arxiv.org/abs/2503.20000}, 
+  }
 ```
